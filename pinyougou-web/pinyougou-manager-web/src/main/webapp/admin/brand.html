@@ -10,57 +10,22 @@
 	<script src="/plugins/jQuery/jquery-2.2.3.min.js"></script>
     <script src="/plugins/bootstrap/js/bootstrap.min.js"></script>
 
+
 	<script src="/plugins/angularjs/angular.min.js"></script>
-    <script type="text/javascript">
-		// 定义模块名
-		var app = angular.module('pinyougou', []);
-		// 模块添加控制器
-		app.controller('brandController', function ($scope, $http) {
-		    // 查询全部品牌
-			$scope.findAll = function () {
-				// 发送异步请求
-				$http.get('/brand/findAll').then(function(response){ // 请求成功
-					// 获取响应数据
-					$scope.dataList = response.data;
-				});
-            };
+	<!-- 分页模块开始 -->
+	<link rel="stylesheet" href="/plugins/angularjs/pagination.css"/>
+	<script src="/plugins/angularjs/pagination.js"></script>
+	<!-- 分页模块结束 -->
+	<script src="/js/base-pagination.js"></script>
+	<script src="/js/service/baseService.js"></script>
+	<script src="/js/controller/baseController.js"></script>
+	<script src="/js/controller/brandController.js"></script>
 
-			// 添加或修改品牌
-			$scope.saveOrUpdate = function () {
-				//alert(JSON.stringify($scope.entity));
-				// 定义请求url (添加)
-				var url = "save";
-				// 判断id
-				if ($scope.entity.id){
-				    url = "update"; // 修改
-				}
-				// 发送异步请求
-				$http.post("/brand/" + url, $scope.entity).then(function(response){
-				    // 判断响应数据
-					if (response.data){ // true
-						// 重新查询数据
-                        $scope.findAll();
-					}else{
-					    alert("添加失败！");
-					}
-				});
-            };
 
-			// 为修改按钮绑定点击事件
-			$scope.show = function (entity) {
-			    // 把entity转化成json字符串
-				var jsonStr = JSON.stringify(entity);
-				// 把json字符串转化成新的json对象
-				$scope.entity = JSON.parse(jsonStr);
-            };
-
-        });
-	</script>
 </head>
 <body class="hold-transition skin-red sidebar-mini"
 	  ng-app="pinyougou"
-	  ng-controller="brandController"
-	  ng-init="findAll();">
+	  ng-controller="brandController">
 	<!-- .box-body -->
 	<div class="box-header with-border">
 		<h3 class="box-title">品牌管理</h3>
@@ -77,7 +42,8 @@
 								data-toggle="modal" data-target="#editModal"
 								ng-click="entity={}">
 							<i class="fa fa-file-o"></i> 新建</button>
-						<button type="button" class="btn btn-default" title="删除" >
+						<button type="button" class="btn btn-default" title="删除"
+								ng-click="delete();" >
 							<i class="fa fa-trash-o"></i> 删除</button>
 						<button type="button" class="btn btn-default" title="刷新"
 								onclick="window.location.reload();">
@@ -90,12 +56,15 @@
 					<!--  查询条件区-->
 					<table>
 						<tr>
-							<td><input class="form-control" placeholder="品牌名称">
+							<td><input class="form-control"
+									   ng-model="searchEntity.name" placeholder="品牌名称">
 							</td>
-							<td><input class="form-control" placeholder="首字母">
+							<td><input class="form-control"
+									   ng-model="searchEntity.firstChar" placeholder="首字母">
 							</td>
 							<td>
-								<button type="button" class="btn btn-default">
+								<button type="button" class="btn btn-default"
+										ng-click="reload()">
 									<i class="fa fa-trash-o"></i> 查询
 								</button>
 							</td>
@@ -119,7 +88,8 @@
 				</thead>
 				<tbody>
 					<tr ng-repeat="entity in dataList">
-						<td><input  type="checkbox" ></td>			                              
+						<!-- $event 事件对象(封装了当前的html元素对应的dom元素)-->
+						<td><input type="checkbox" ng-click="updateSelection($event, entity.id)"></td>
 						<td>{{entity.id}}</td>
 						<td>{{entity.name}}</td>
 						<td>{{entity.firstChar}}</td>
@@ -130,10 +100,12 @@
 									data-target="#editModal"  ng-click="show(entity)">修改</button>
 						</td>
 					</tr>
-
 				</tbody>
 			 </table>
-			 <!--数据列表/-->                        
+			 <!--数据列表/-->
+			 <!-- 分页指令 -->
+			 <tm-pagination conf="paginationConf"/>
+
 		</div>
 		<!-- 数据表格 /-->
 	 </div>
@@ -162,7 +134,6 @@
 					</tr>		      	
 				 </table>				
 			</div>
-			{{entity}}
 			<div class="modal-footer">						
 				<button class="btn btn-success" data-dismiss="modal"
 						ng-click="saveOrUpdate();"

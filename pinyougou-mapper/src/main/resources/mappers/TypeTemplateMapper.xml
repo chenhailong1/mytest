@@ -5,4 +5,14 @@
 
 <mapper namespace="com.pinyougou.mapper.TypeTemplateMapper">
 
+	<!--多条件查询类型模板-->
+	<select id="findAll" resultType="TypeTemplate">
+		select * from tb_type_template
+		<where>
+			<if test="name != null and name !=''" >
+				NAME  LIKE  concat('%',#{name},'%')
+			</if>
+		</where>
+		ORDER BY id ASC
+	</select>
 </mapper>

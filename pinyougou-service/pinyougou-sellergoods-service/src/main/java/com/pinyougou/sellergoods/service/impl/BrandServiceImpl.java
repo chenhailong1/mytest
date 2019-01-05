@@ -4,14 +4,18 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.ISelect;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.pinyougou.common.pojo.PageResult;
 import com.pinyougou.mapper.BrandMapper;
 import com.pinyougou.pojo.Brand;
 import com.pinyougou.service.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 品牌服务接口实现类
@@ -50,12 +54,23 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public void delete(Serializable id) {
-
     }
 
     @Override
     public void deleteAll(Serializable[] ids) {
-
+        try{
+            // DELETE FROM tb_brand WHERE ( id in ( ? , ? ) )
+            // 创建示范对象
+            Example example = new Example(Brand.class);
+            // 创建删除条件
+            Example.Criteria criteria = example.createCriteria();
+            // 添加in条件 id in (?,?,?)
+            criteria.andIn("id", Arrays.asList(ids));
+            // 根据条件删除
+            brandMapper.deleteByExample(example);
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
@@ -69,7 +84,29 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public List<Brand> findByPage(Brand brand, int page, int rows) {
+    public PageResult findByPage(Brand brand, int page, int rows) {
+        try{
+            // 开启分页查询
+            PageInfo<Brand> pageInfo = PageHelper.startPage(page, rows)
+                    .doSelectPageInfo(new ISelect() {
+                @Override
+                public void doSelect() {
+                    brandMapper.findAll(brand);
+                }
+            });
+            return new PageResult(pageInfo.getTotal(), pageInfo.getList());
+        }catch (Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public List<Map<String, Object>> findallByIdAndName() {
+        try{
+            brandMapper.findAllByIdAndName();
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
         return null;
     }
 }

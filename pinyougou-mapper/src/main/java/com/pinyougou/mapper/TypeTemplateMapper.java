@@ -4,6 +4,8 @@ import tk.mybatis.mapper.common.Mapper;
 
 import com.pinyougou.pojo.TypeTemplate;
 
+import java.util.List;
+
 /**
  * TypeTemplateMapper 数据访问接口
  * @date 2018-11-18 16:01:05
@@ -12,5 +14,5 @@ import com.pinyougou.pojo.TypeTemplate;
 public interface TypeTemplateMapper extends Mapper<TypeTemplate>{
 
 
-
+    List<TypeTemplate> findAll(TypeTemplate typeTemplate);
 }
